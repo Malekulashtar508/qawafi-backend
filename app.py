@@ -6,16 +6,18 @@ import sys
 app = Flask(__name__)
 CORS(app)
 
-# clone repo if not exists
+# Clone repo
 if not os.path.exists("qawafi"):
     os.system("git clone https://github.com/ARBML/qawafi.git")
 
-# add to path
+# Install its dependencies
+if os.path.exists("qawafi/demo_requirements.txt"):
+    os.system("pip install -r qawafi/demo_requirements.txt")
+
+# Add to path
 sys.path.append("qawafi")
 
-from qawafi_server.bait_analysis import BaitAnalysis
-
-analysis = BaitAnalysis()
+analysis = None
 
 @app.route('/')
 def home():
@@ -23,6 +25,12 @@ def home():
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
+    global analysis
+
+    if analysis is None:
+        from qawafi_server.bait_analysis import BaitAnalysis
+        analysis = BaitAnalysis()
+
     text = request.json.get("text")
 
     with open("input.txt", "w", encoding="utf-8") as f:
